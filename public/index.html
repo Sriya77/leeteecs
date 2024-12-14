@@ -3,54 +3,133 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>LeetCode User Stats</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       body {
         background-color: rgb(96, 93, 93);
         color: white;
         font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        flex-direction: column;
+      }
+      .input-container {
+        margin: 20px;
+      }
+      .input-container input,
+      .input-container button {
+        padding: 10px;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: none;
+      }
+      .input-container input {
+        width: 250px;
+        margin-right: 10px;
+      }
+      .input-container button {
+        background-color: #3498db;
+        color: white;
+        cursor: pointer;
+      }
+      .input-container button:hover {
+        background-color: #2980b9;
+      }
+      .stats-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3 charts per row */
+        gap: 30px;
+        margin-top: 40px;
+        width: 100%;
       }
       .glassmorphism {
         background: rgba(255, 255, 255, 0.1);
         border-radius: 15px;
-        padding: 15px;
+        padding: 20px;
         backdrop-filter: blur(10px);
-        margin: 10px;
-        flex: 1 1 calc(33.33% - 20px); /* Flexible size for responsive design */
         box-sizing: border-box;
-      }
-      .stats-container {
         display: flex;
-        flex-wrap: wrap;
+        align-items: center;
         justify-content: space-between;
-        gap: 10px;
+        text-align: center;
+      }
+      .glassmorphism h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        flex: 1;
+      }
+      .spinner {
+        border: 8px solid rgba(0, 0, 0, 0.1);
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      #loadingSpinner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 50;
+        visibility: hidden;
+      }
+      #loadingSpinner.visible {
+        visibility: visible;
+      }
+      #userStats {
+        margin-top: 20px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       canvas {
-        margin: 10px auto;
-        display: block;
+        width: 100px !important;
+        height: 100px !important; /* Smaller donut chart */
       }
     </style>
   </head>
   <body>
-    <input type="text" id="username" placeholder="Enter Username" />
-    <button onclick="fetchuserstats()">Okay</button>
-
-    <!-- Loading Spinner -->
+    <div class="input-container">
+      <input type="text" id="username" placeholder="Enter Username" />
+      <button onclick="fetchuserstats()">Okay</button>
+    </div>
     <div id="loadingSpinner">
       <div class="spinner"></div>
     </div>
 
-    <!-- Container for stats -->
+    <!-- Container to display user stats -->
     <div id="userStats"></div>
 
     <script>
       async function fetchuserstats() {
         const username = document.getElementById("username").value;
 
+        // Show loading spinner
+        document.getElementById("loadingSpinner").classList.add("visible");
+
         try {
           const response = await fetch(`http://localhost:3000/${username}`);
           const data = await response.json();
+          console.log("hi", data);
 
           if (data.errors && data.errors.length > 0) {
             if (
@@ -64,10 +143,13 @@
             }
           }
 
-          // Display the user stats with donut charts
+          // If no errors, proceed with displaying the data
           displayUserStats(data);
         } catch (error) {
-          console.error(error);
+          console.log(error);
+        } finally {
+          // Hide loading spinner
+          document.getElementById("loadingSpinner").classList.remove("visible");
         }
       }
 
@@ -75,87 +157,87 @@
         const statsHtml = `
           <div class="stats-container">
             <div class="glassmorphism">
-              <h3>Total Solved</h3>
+              <h3>Total Solved:</h3>
               <canvas id="totalSolvedChart"></canvas>
+              <p>${data.totalSolved} / ${data.totalQuestions}</p>
             </div>
             <div class="glassmorphism">
-              <h3>Easy Solved</h3>
+              <h3>Ranking:</h3>
+              <p>${data.ranking}</p>
+            </div>
+            <div class="glassmorphism">
+              <h3>Contribution Points:</h3>
+              <p>${data.contributionPoints}</p>
+            </div>
+            <div class="glassmorphism">
+              <h3>Easy Solved:</h3>
               <canvas id="easySolvedChart"></canvas>
+              <p>${data.easySolved} / ${data.totalEasy}</p>
             </div>
             <div class="glassmorphism">
-              <h3>Medium Solved</h3>
+              <h3>Medium Solved:</h3>
               <canvas id="mediumSolvedChart"></canvas>
+              <p>${data.mediumSolved} / ${data.totalMedium}</p>
             </div>
             <div class="glassmorphism">
-              <h3>Hard Solved</h3>
+              <h3>Hard Solved:</h3>
               <canvas id="hardSolvedChart"></canvas>
+              <p>${data.hardSolved} / ${data.totalHard}</p>
             </div>
           </div>
         `;
 
+        // Render the stats in the `userStats` container
         document.getElementById("userStats").innerHTML = statsHtml;
 
-        // Draw charts for the data
-        drawDonutChart(
-          "totalSolvedChart",
-          "Total Solved",
-          data.totalSolved,
-          data.totalQuestions
-        );
-        drawDonutChart(
-          "easySolvedChart",
-          "Easy Solved",
-          data.easySolved,
-          data.totalEasy
-        );
-        drawDonutChart(
-          "mediumSolvedChart",
-          "Medium Solved",
-          data.mediumSolved,
-          data.totalMedium
-        );
-        drawDonutChart(
-          "hardSolvedChart",
-          "Hard Solved",
-          data.hardSolved,
-          data.totalHard
-        );
+        // Create the donut chart for Total Solved
+        createDonutChart('totalSolvedChart', 'Total Solved', data.totalSolved, data.totalQuestions);
+
+        // Create the donut chart for Easy Solved
+        createDonutChart('easySolvedChart', 'Easy Solved', data.easySolved, data.totalEasy);
+
+        // Create the donut chart for Medium Solved
+        createDonutChart('mediumSolvedChart', 'Medium Solved', data.mediumSolved, data.totalMedium);
+
+        // Create the donut chart for Hard Solved
+        createDonutChart('hardSolvedChart', 'Hard Solved', data.hardSolved, data.totalHard);
       }
 
-      function drawDonutChart(chartId, label, solved, total) {
-        const ctx = document.getElementById(chartId).getContext("2d");
+      function createDonutChart(elementId, label, solved, total) {
+        const ctx = document.getElementById(elementId).getContext('2d');
+        const percentage = (solved / total) * 100;
+        const isSolved = solved > 0;
+        const donutColor = isSolved ? (percentage > 75 ? '#66bb6a' : percentage > 50 ? '#ffeb3b' : '#ff5722') : 'transparent';
+
         new Chart(ctx, {
-          type: "doughnut",
+          type: 'doughnut',
           data: {
-            labels: ["Solved", "Remaining"],
-            datasets: [
-              {
-                label: label,
-                data: [solved, total - solved],
-                backgroundColor: ["#4CAF50", "#E57373"], // Green and red colors
-                borderWidth: 1,
-              },
-            ],
+            labels: [label],
+            datasets: [{
+              data: [solved, total - solved], // Solved vs remaining problems
+              backgroundColor: [donutColor, '#cccccc'], // Color based on solved percentage
+              borderColor: [donutColor, '#666666'],
+              borderWidth: 2  // Thinner donut
+            }]
           },
           options: {
             responsive: true,
+            cutoutPercentage: 80,  // Make the chart thinner
+            aspectRatio: 1,  // Keep the chart circular (or slightly rectangular)
             plugins: {
               legend: {
-                position: "bottom",
+                display: false // Hiding the legend since we are only showing one part
               },
               tooltip: {
                 callbacks: {
-                  label: function (context) {
-                    const value = context.raw;
-                    return `${value} (${(
-                      (value / total) *
-                      100
-                    ).toFixed(2)}%)`;
-                  },
-                },
-              },
+                  label: function(tooltipItem) {
+                    const value = tooltipItem.raw;
+                    return `${label}: ${value}`;
+                  }
+                }
+              }
             },
-          },
+          }
         });
       }
     </script>
