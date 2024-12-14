@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -165,6 +164,31 @@
         height: 12px;
         border-radius: 2px;
       }
+      .us22 {
+  background-color: transparent;
+  border: 2px solid #a5a394;
+  padding: 2%;
+  border-radius: 15px;
+  color: #e6e2dd;
+  max-width: 100%; /* Ensures the element doesn't exceed container width */
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+}
+
+/* For screens smaller than 1024px (tablets and below) */
+@media (max-width: 1024px) {
+  .us22 {
+    padding: 3%; /* Increase padding slightly for tablets */
+  }
+}
+
+/* For screens smaller than 768px (phones and below) */
+@media (max-width: 768px) {
+  .us22 {
+    padding: 4%; /* Further increase padding for smaller devices */
+    font-size: 14px; /* Adjust font size for smaller screens */
+  }
+}
+
     </style>
   </head>
   <body>
@@ -179,6 +203,7 @@
 
     <!-- Container to display user stats -->
     <div id="userStats"></div>
+    <div id="us2"></div>
 
     <div id="heatmapChart"></div>
 
@@ -189,18 +214,27 @@
         // Show loading spinner
         document.getElementById("loadingSpinner").classList.add("visible");
 
+        
+
         try {
           const response = await fetch(`http://localhost:3000/${username}`);
           const data = await response.json();
           console.log("hi", data);
-
+          var ss = data.data.data.matchedUser == "null";
+          console.log(ss);
+          if(data.data.data.matchedUser == null){
+              console.log("heelluwwww")
+              document.getElementById("us2").innerHTML =
+              '<div class = "us22"><h1>NO USER EXISTS!</h1></div>';
+              return;
+            }
           if (data.errors && data.errors.length > 0) {
             if (
               data.errors.some((error) =>
                 error.message.includes("user does not exist")
               )
             ) {
-              throw new Error(`User "${username}" does not exist`);
+              throw new error("BlahBlah")
             } else {
               throw new Error("An error occurred while fetching user data");
             }
@@ -251,7 +285,7 @@
           </div>
         `;
 
-        // Render the stats in the userStats container
+        // Render the stats in the `userStats` container
         document.getElementById("userStats").innerHTML = statsHtml;
 
         // Create the donut chart for Total Solved
@@ -332,99 +366,130 @@
           },
         });
       }
-
-      document
-        .getElementById("username")
-        .addEventListener("keypress", function (event) {
+      document.getElementById("username").addEventListener("keypress", function (event) {
           if (event.key === "Enter") {
             fetchuserstats();
           }
-        });
+      });
 
-        function createHeatmap(submissionCalendar) {
+      function createHeatmap(submissionCalendar) {
   const heatmapContainer = document.getElementById("heatmapChart");
+  heatmapContainer.className = "heatmap-title";
   heatmapContainer.innerHTML =
-    '<h2 class="text-2xl font-bold text-white mb-4">Submission Heatmap</h2>'; // Clear existing content
+    '<h2>Submission Heatmap</h2>'; // Clear existing content
 
   // Add internal styles
   const style = document.createElement("style");
   style.textContent = `
+  .heatmap-title{
+  align-item:center;
+  }
     .heatmap-container {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-      font-family: Arial, sans-serif;
-    }
-    .months-container {
-      display: flex;
-      font-size: 0.75rem;
-      color: #a5a394;
-      margin-bottom: 0.5rem;
-    }
-    .month-label {
-      flex: 1;
-      text-align: center;
-      font-weight: bold;
-    }
-    .grid-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      align-items: flex-start;
-      margin-top: 0.5rem;
-    }
-    .day-labels {
-      display: flex;
-      flex-direction: row;
-      gap: 2rem;
-      font-size: 0.75rem;
-      color: #a5a394;
-      padding-right: 0.5rem;
-    }
-    .week-container {
-      display: flex;
-      flex-direction: row;
-      gap: 0.25rem;
-    }
-    .contribution-cell {
-      width: 12px;
-      height: 12px;
-      border-radius: 2px;
-      background-color: #ccc;
-      margin-bottom: 0.25rem;
-      transition: transform 0.3s ease;
-    }
-    .contribution-cell:hover {
-      transform: scale(1.2);
-    }
-    .level-0 {
-      background-color: #161b22;
-    }
-    .level-1 {
-      background-color: #0e4429;
-    }
-    .level-2 {
-      background-color: #006d32;
-    }
-    .level-3 {
-      background-color: #26a641;
-    }
-    .level-4 {
-      background-color: #39d353;
-    }
-    .legend-container {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.75rem;
-      color: #a5a394;
-      margin-top: 1rem;
-    }
-    .legend-cell {
-      width: 20px;
-      height: 20px;
-      margin-right: 0.25rem;
-    }
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  font-family: Arial, sans-serif;
+  border: 2px solid #a5a394;
+  border-radius: 15px;
+  padding: 20px;
+  background: #573d30;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px);
+}
+
+.heatmap-container h2 {
+  text-align: center;
+  color: #a5a394;
+}
+
+.months-container {
+  display: flex;
+  font-size: 0.75rem;
+  color: #a5a394;
+  margin-bottom: 0.5rem;
+}
+
+.month-label {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+}
+
+.grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-top: 0.5rem;
+}
+
+.week-container {
+  display: flex;
+  flex-direction: row;
+  gap: 0.25rem;
+}
+
+.contribution-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background-color: #ccc;
+  margin-bottom: 0.25rem;
+  transition: transform 0.3s ease;
+}
+
+.contribution-cell:hover {
+  transform: scale(1.2);
+}
+
+.level-0 {
+  background-color: #161b22;
+}
+
+.level-1 {
+  background-color: #0e4429;
+}
+
+.level-2 {
+  background-color: #006d32;
+}
+
+.level-3 {
+  background-color: #26a641;
+}
+
+.level-4 {
+  background-color: #39d353;
+}
+
+.legend-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #a5a394;
+  margin-top: 1rem;
+}
+
+.legend-cell {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.25rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .heatmap-container {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .heatmap-container {
+    padding: 10px;
+  }
+}
+
   `;
   document.head.appendChild(style);
 
@@ -462,14 +527,14 @@
   gridContainer.className = "grid-container";
 
   // Add day labels (Mon, Wed, Fri)
-  const dayLabels = document.createElement("div");
-  dayLabels.className = "day-labels";
-  ["Mon", "Wed", "Fri"].forEach((day) => {
-    const dayLabel = document.createElement("div");
-    dayLabel.textContent = day;
-    dayLabels.appendChild(dayLabel);
-  });
-  gridContainer.appendChild(dayLabels);
+  // const dayLabels = document.createElement("div");
+  // dayLabels.className = "day-labels";
+  // ["Mon", "Wed", "Fri"].forEach((day) => {
+  //   const dayLabel = document.createElement("div");
+  //   dayLabel.textContent = day;
+  //   dayLabels.appendChild(dayLabel);
+  // });
+  // gridContainer.appendChild(dayLabels);
 
   // Process and create contribution grid
   const { weeks } = processCalendarData(submissionCalendar);
@@ -488,20 +553,7 @@
   container.appendChild(gridContainer);
 
   // Add legend
-  const legendContainer = document.createElement("div");
-  legendContainer.className = "legend-container";
-  legendContainer.innerHTML = `
-    <span>Less</span>
-    <div class="flex gap-1">
-      <div class="contribution-cell level-0 legend-cell"></div>
-      <div class="contribution-cell level-1 legend-cell"></div>
-      <div class="contribution-cell level-2 legend-cell"></div>
-      <div class="contribution-cell level-3 legend-cell"></div>
-      <div class="contribution-cell level-4 legend-cell"></div>
-    </div>
-    <span>More</span>
-  `;
-  container.appendChild(legendContainer);
+  
 
   heatmapContainer.appendChild(container);
 }
@@ -560,6 +612,7 @@ function getContributionLevel(count) {
   if (count <= 9) return 3;
   return 4;
 }
+
 
     </script>
   </body>
