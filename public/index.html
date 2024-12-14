@@ -7,8 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       body {
-        background-color: #1a120b; /* Background color */
-        color: #a5a394; /* Font color */
+        background-color: #1a120b; 
+        color: #a5a394; 
         font-family: Arial, sans-serif;
         display: flex;
         justify-content: center;
@@ -34,23 +34,23 @@
         margin-right: 10px;
       }
       .input-container button {
-        background-color: #fff0dc; /* Button color */
+        background-color: #fff0dc; 
         color: #131010;
         cursor: pointer;
       }
       .input-container button:hover {
-        background-color: #e6d7b9; /* Darker button on hover */
+        background-color: #e6d7b9; 
       }
       .stats-container {
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* Default 3 charts per row */
+        grid-template-columns: repeat(3, 1fr); 
         gap: 30px;
         margin-top: 40px;
         width: 100%;
-        max-width: 1200px; /* Limit the width of the container */
+        max-width: 1200px; 
       }
       .glassmorphism {
-        background: #573d30; /* Card color */
+        background: #573d30;
         border-radius: 15px;
         padding: 20px;
         backdrop-filter: blur(10px);
@@ -115,25 +115,24 @@
           grid-template-columns: repeat(
             2,
             1fr
-          ); /* 2 charts per row on medium screens */
+          ); 
         }
       }
 
       @media (max-width: 768px) {
         .stats-container {
-          grid-template-columns: 1fr; /* 1 chart per row on smaller screens */
+          grid-template-columns: 1fr;
         }
         canvas {
           width: 80px !important;
-          height: 80px !important; /* Smaller donut chart on mobile */
+          height: 80px !important; 
         }
       }
-      /* Updated for horizontal alignment */
       .horizontal-row {
         display: flex;
-        flex-wrap: nowrap; /* Prevent wrapping */
-        overflow-x: auto; /* Allow horizontal scrolling if needed */
-        gap: 20px; /* Spacing between months */
+        flex-wrap: nowrap; 
+        overflow-x: auto; 
+        gap: 20px; 
       }
 
       .month-container {
