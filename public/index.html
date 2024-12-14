@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        background-color: rgb(96, 93, 93);
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+      .glassmorphism {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 15px;
+        backdrop-filter: blur(10px);
+        margin: 10px;
+        flex: 1 1 calc(33.33% - 20px); /* Flexible size for responsive design */
+        box-sizing: border-box;
+      }
+      .stats-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      canvas {
+        margin: 10px auto;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="text" id="username" placeholder="Enter Username" />
+    <button onclick="fetchuserstats()">Okay</button>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Container for stats -->
+    <div id="userStats"></div>
+
+    <script>
+      async function fetchuserstats() {
+        const username = document.getElementById("username").value;
+
+        try {
+          const response = await fetch(`http://localhost:3000/${username}`);
+          const data = await response.json();
+
+          if (data.errors && data.errors.length > 0) {
+            if (
+              data.errors.some((error) =>
+                error.message.includes("user does not exist")
+              )
+            ) {
+              throw new Error(`User "${username}" does not exist`);
+            } else {
+              throw new Error("An error occurred while fetching user data");
+            }
+          }
+
+          // Display the user stats with donut charts
+          displayUserStats(data);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      function displayUserStats(data) {
+        const statsHtml = `
+          <div class="stats-container">
+            <div class="glassmorphism">
+              <h3>Total Solved</h3>
+              <canvas id="totalSolvedChart"></canvas>
+            </div>
+            <div class="glassmorphism">
+              <h3>Easy Solved</h3>
+              <canvas id="easySolvedChart"></canvas>
+            </div>
+            <div class="glassmorphism">
+              <h3>Medium Solved</h3>
+              <canvas id="mediumSolvedChart"></canvas>
+            </div>
+            <div class="glassmorphism">
+              <h3>Hard Solved</h3>
+              <canvas id="hardSolvedChart"></canvas>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("userStats").innerHTML = statsHtml;
+
+        // Draw charts for the data
+        drawDonutChart(
+          "totalSolvedChart",
+          "Total Solved",
+          data.totalSolved,
+          data.totalQuestions
+        );
+        drawDonutChart(
+          "easySolvedChart",
+          "Easy Solved",
+          data.easySolved,
+          data.totalEasy
+        );
+        drawDonutChart(
+          "mediumSolvedChart",
+          "Medium Solved",
+          data.mediumSolved,
+          data.totalMedium
+        );
+        drawDonutChart(
+          "hardSolvedChart",
+          "Hard Solved",
+          data.hardSolved,
+          data.totalHard
+        );
+      }
+
+      function drawDonutChart(chartId, label, solved, total) {
+        const ctx = document.getElementById(chartId).getContext("2d");
+        new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Solved", "Remaining"],
+            datasets: [
+              {
+                label: label,
+                data: [solved, total - solved],
+                backgroundColor: ["#4CAF50", "#E57373"], // Green and red colors
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    const value = context.raw;
+                    return `${value} (${(
+                      (value / total) *
+                      100
+                    ).toFixed(2)}%)`;
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+    </script>
+  </body>
+</html>
