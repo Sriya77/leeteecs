@@ -1,6 +1,5 @@
 const express = require('express')
 const app = express();
-// const fetch = require('node-fetch');
 const cors = require('cors')
 let leet = require('./leetcode');
 const path = require('path');
